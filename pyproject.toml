@@ -12,6 +12,7 @@ authors = [
 ]
 dependencies = [
     "endstone",
+    "aiohttp",
 ]
 
 [project.entry-points."endstone"]
