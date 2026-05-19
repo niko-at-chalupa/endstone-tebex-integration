@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.entry-points."endstone"]
-tebex = "endstone_tebex_integration:TebexIntegrationPlugin"
+tebex-integration = "endstone_tebex_integration:TebexIntegrationPlugin"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/endstone_tebex_integration"]
