@@ -16,6 +16,12 @@ class TebexIntegrationPlugin(Plugin):
         self._config: TebexConfig = self._load_config()
         self.register_events(self)
         self.logger.info("Tebex Integration Plugin enabled.")
+        if self.server.online_mode == False:
+            self.logger.warning("*" * 60)
+            self.logger.warning("online-mode is set to FALSE!!!!")
+            self.logger.warning("Player XUIDs can't be verified!!!! Payments can be FAKED!!!!!!!")
+            self.logger.warning("It is highly recommended to enable online-mode in server.properties.")
+            self.logger.warning("*" * 60)
 
     def _load_config(self) -> TebexConfig:
         folder = Path(self.data_folder)
