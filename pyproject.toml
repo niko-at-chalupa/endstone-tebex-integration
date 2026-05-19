@@ -13,6 +13,7 @@ authors = [
 dependencies = [
     "endstone",
     "aiohttp",
+    "pydantic",
 ]
 
 [project.entry-points."endstone"]
