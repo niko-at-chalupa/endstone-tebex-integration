@@ -24,7 +24,7 @@ class TebexIntegrationPlugin(Plugin):
         
         yml = YAML()
         yml.version = (1, 2)
-        yml.preserve_quotes = True
+        yml.preserve_quotes = False
         
         defaults = [
             ("secret_key", "", "Your Tebex secret key"),
