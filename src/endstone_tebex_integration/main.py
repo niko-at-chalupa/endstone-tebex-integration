@@ -1,27 +1,94 @@
 from pathlib import Path
 from typing import Any, cast
 from endstone.plugin import Plugin
+from endstone.command import CommandSender, Command
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 from pydantic import BaseModel, Field
+from .commands import TebexCommands, TebexAdminCommands
 
 class TebexConfig(BaseModel):
     secret_key: str = ""
     webhook_secret: str = ""
     check_interval: int = 60
     messages: dict[str, str] = Field(default_factory=dict)
+    help: dict[str, str] = Field(default_factory=dict)
+    help_admin: dict[str, str] = Field(default_factory=dict)
 
 class TebexIntegrationPlugin(Plugin):
+    config: TebexConfig
+
+    commands = {
+        "tebex": {
+            "description": "General Tebex commands.",
+            "usages": [
+                "/tebex <subcommand: string>", 
+                "/tebex help"
+            ], # please make sure this mirrors subcommands in commands.py
+            "permissions": ["tebex_integration.command.general"],
+        },
+        
+        "tebexadmin": {
+            "description": "Administrative commands for Tebex.",
+            "usages": [
+                "/tebexadmin <subcommand: string>",
+                "/tebexadmin help"
+            ], # please make sure this mirrors subcommands in commands.py
+            "permissions": ["tebex_integration.command.admin"],
+        }
+    }
+
+    permissions = {
+        "tebex_integration.command.general": {
+            "description": "Allow users to access basic tebex commands.",
+            "default": True, 
+        },
+
+        "tebex_integration.command.admin": {
+            "description": "Allow users to access administrative tebex commands.",
+            "default": False, 
+        }
+    }
+
     def on_enable(self) -> None:
         self._config: TebexConfig = self._load_config()
         self.register_events(self)
         self.logger.info("Tebex Integration Plugin enabled.")
+
         if self.server.online_mode == False:
             self.logger.warning("*" * 60)
             self.logger.warning("online-mode is set to FALSE!!!!")
             self.logger.warning("Player XUIDs can't be verified!!!! Payments can be FAKED!!!!!!!")
             self.logger.warning("It is highly recommended to enable online-mode in server.properties.")
             self.logger.warning("*" * 60)
+
+        self.tebex_subcommands = TebexCommands(self)
+        self.tebex_admin_subcommands = TebexAdminCommands(self)
+
+    def on_command(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
+        if command.name != "tebex" and command.name != "tebexadmin":
+            return True
+        if len(args) == 0:
+            sender.send_error_message(self.config.messages.get("no_subcommand", "no subcommand"))
+            return False
+
+        if command.name == "tebex":
+            subcommand = self.tebex_subcommands.subcommand_map.get(args[0])
+            if subcommand:
+                return subcommand(sender, command, args[1:])
+            else:
+                sender.send_error_message(self.config.messages.get("invalid_subcommand", "invalid subcommand"))
+                return False
+
+        if command.name == "tebexadmin":
+            subcommand = self.tebex_admin_subcommands.subcommand_map.get(args[0])
+            if subcommand:
+                return subcommand(sender, command, args[1:])
+            else:
+                sender.send_error_message(self.config.messages.get("invalid_subcommand", "invalid subcommand"))
+
+
+        return True
 
     def _load_config(self) -> TebexConfig:
         folder = Path(self.data_folder)
@@ -36,7 +103,15 @@ class TebexIntegrationPlugin(Plugin):
             ("secret_key", "", "Your Tebex secret key"),
             ("webhook_secret", "", "Your tebex webhook secret (leave empty if not using webhooks)"),
             ("check_interval", 60, "Interval in seconds to check for new payments"),
+
             ("messages.payment_success", "Thank you!! The payment was successful", "Message shown to the player after a successful payment"),
+            ("messages.no_subcommand", "No subcommand was provided. Try /tebex help.", "Shown when /tebex | /tebexadmin is used with no arguments"),
+            ("messages.invalid_subcommand", "The subcommand provided isn't valid. Try /tebex help.", "Shown when /tebex | /tebexadmin is used with an invalid subcommand"),
+
+            # The help section MUST have each of its items to be aligned with a real subcommand.
+            ("help.help", "Show this help message", "/tebex help"),
+
+            ("help_admin.help", "Show this help message", "/tebexadmin help")
         ]
         
         if cfg_path.exists():
