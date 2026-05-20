@@ -1,20 +1,14 @@
 from endstone.command import CommandSender, Command
 from abc import ABC
-from typing import Callable, Any, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from . import TebexIntegrationPlugin
 
-# For each method that a subcommand maps to, please have args be [1:] (i.e., everything after the first item)
-# instead of just the args that on_command gives you. Thank you!
 
 class Subcommands(ABC):
-    # def a_function(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
-    # { "a": self.a_function }
-    # ^ this is what we're asking for (the dict)
-    # This should also accept unbound methods (methods that aren't object.method, but rather method(object)), but
-    # we won't be using unbount methods anyways so it doesn't matter
     subcommand_map: dict[str, Callable[[CommandSender, Command, list[str]], bool]]
+
 
 class TebexCommands(Subcommands):
     """Defines all general subcommands for /tebex"""
@@ -32,17 +26,45 @@ class TebexCommands(Subcommands):
 
         return True
 
+    def secret(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
+        if len(args) == 0:
+            sender.send_error_message("Usage: /tebex secret <key>")
+            return False
+
+        secret_key = args[0]
+        # Will call plugin.set_secret(secret_key)
+        self.plugin.set_secret(secret_key, sender)
+        return True
+
+    def info(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
+        # Will call plugin.show_info(sender)
+        self.plugin.show_tebex_info(sender)
+        return True
+
+    def refresh(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
+        # Will call plugin.refresh_commands(sender)
+        self.plugin.refresh_commands(sender)
+        return True
+
+    def dropall(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
+        # Will call plugin.drop_all_commands(sender)
+        self.plugin.drop_all_commands(sender)
+        return True
+
     def __init__(self, plugin: 'TebexIntegrationPlugin'):
         self.plugin = plugin
 
         self.subcommand_map = {
             "help": self.help,
+            "secret": self.secret,
+            "info": self.info,
+            "refresh": self.refresh,
+            "dropall": self.dropall,
         }
 
-class TebexAdminCommands(Subcommands):
-    """Defines all general subcommands for /tebexadmin"""
 
-    # unfinished, I don't have commands set up yet
+class TebexAdminCommands(Subcommands):
+    """Defines all admin subcommands for /tebexadmin"""
 
     def help(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
         messages = self.plugin.config.messages

@@ -1,4 +1,5 @@
 .venv
 bedrock_server
+.idea
 **pycache**
 **ignore
