@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "endstone-tebex-integration"
+version = "0.1.0"
+description = "placeholder"
+authors = [
+    { name = "niko-at-chalupa" },
+    { name = "MakiTazo" }
+]
+dependencies = [
+    "endstone",
+    "aiohttp",
+    "pydantic",
+    "ruamel.yaml",
+]
+
+[project.entry-points."endstone"]
+tebex-integration = "endstone_tebex_integration:TebexIntegrationPlugin"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/endstone_tebex_integration"]
