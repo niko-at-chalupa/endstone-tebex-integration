@@ -2,8 +2,10 @@ from __future__ import annotations
 from typing import List
 import aiohttp
 from . import (
-    TebexInformation, TebexDuePlayersInfo,
-    TebexQueuedOnlineCommandsInfo, TebexQueuedOfflineCommandsInfo,
+    TebexInformation,
+    TebexDuePlayersInfo,
+    TebexQueuedOnlineCommandsInfo,
+    TebexQueuedOfflineCommandsInfo,
 )
 
 
@@ -12,6 +14,7 @@ class TebexClient:
 
     def __init__(self, secret: str) -> None:
         self.secret = secret
+        self._session: aiohttp.ClientSession | None = None
 
     def _headers(self) -> dict:
         return {
@@ -19,23 +22,32 @@ class TebexClient:
             "Accept": "application/json",
         }
 
+    async def _ensure_session(self) -> aiohttp.ClientSession:
+        if self._session is None or self._session.closed:
+            self._session = aiohttp.ClientSession()
+        return self._session
+
+    async def close(self) -> None:
+        if self._session and not self._session.closed:
+            await self._session.close()
+
     async def _get(self, endpoint: str) -> dict:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"{self.BASE_URL}{endpoint}",
-                headers=self._headers(),
-            ) as response:
-                response.raise_for_status()
-                return await response.json()
+        session = await self._ensure_session()
+        async with session.get(
+            f"{self.BASE_URL}{endpoint}",
+            headers=self._headers(),
+        ) as response:
+            response.raise_for_status()
+            return await response.json()
 
     async def _delete(self, endpoint: str, json: dict) -> None:
-        async with aiohttp.ClientSession() as session:
-            async with session.delete(
-                f"{self.BASE_URL}{endpoint}",
-                headers=self._headers(),
-                json=json,
-            ) as response:
-                response.raise_for_status()
+        session = await self._ensure_session()
+        async with session.delete(
+            f"{self.BASE_URL}{endpoint}",
+            headers=self._headers(),
+            json=json,
+        ) as response:
+            response.raise_for_status()
 
     async def get_information(self) -> TebexInformation:
         data = await self._get("/information")
@@ -55,3 +67,9 @@ class TebexClient:
 
     async def delete_commands(self, command_ids: List[int]) -> None:
         await self._delete("/queue", {"ids": command_ids})
+
+    async def get_listing(self) -> dict:
+        return await self._get("/listing")
+
+    async def get_payment(self, transaction_id: str) -> dict:
+        return await self._get(f"/payments/{transaction_id}")
