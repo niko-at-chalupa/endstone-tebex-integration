@@ -1,6 +1,7 @@
 from endstone.command import CommandSender, Command
 from abc import ABC
 from typing import Callable, Any, TYPE_CHECKING
+from .tebex import TebexClient
 
 if TYPE_CHECKING:
     from . import TebexIntegrationPlugin
@@ -15,6 +16,7 @@ class Subcommands(ABC):
     # This should also accept unbound methods (methods that aren't object.method, but rather method(object)), but
     # we won't be using unbount methods anyways so it doesn't matter
     subcommand_map: dict[str, Callable[[CommandSender, Command, list[str]], bool]]
+    tebex_client: TebexClient
 
 class TebexCommands(Subcommands):
     """Defines all general subcommands for /tebex"""
@@ -35,8 +37,9 @@ class TebexCommands(Subcommands):
     def info(self, sender: CommandSender, command: Command, args: list[str]):
         pass
 
-    def __init__(self, plugin: 'TebexIntegrationPlugin'):
+    def __init__(self, plugin: 'TebexIntegrationPlugin', tebex_client: TebexClient):
         self.plugin = plugin
+        self.tebex_client = tebex_client
 
         self.subcommand_map = {
             "help": self.help,
@@ -44,8 +47,6 @@ class TebexCommands(Subcommands):
 
 class TebexAdminCommands(Subcommands):
     """Defines all general subcommands for /tebexadmin"""
-
-    # unfinished, I don't have commands set up yet
 
     def help(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
         messages = self.plugin.config.messages
@@ -66,8 +67,9 @@ class TebexAdminCommands(Subcommands):
     def dropall(self, sender: CommandSender, command: Command, args: list[str]):
         pass
 
-    def __init__(self, plugin: 'TebexIntegrationPlugin'):
+    def __init__(self, plugin: 'TebexIntegrationPlugin', tebex_client: TebexClient):
         self.plugin = plugin
+        self.tebex_client = tebex_client
 
         self.subcommand_map = {
             "help": self.help,

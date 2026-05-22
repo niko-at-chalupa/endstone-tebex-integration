@@ -12,6 +12,8 @@ from .models import (
     TebexInformation,
 )
 
+from .client import TebexClient
+
 __all__ = [
     "TebexDuePlayer",
     "TebexCommandConditions",
@@ -24,4 +26,5 @@ __all__ = [
     "TebexServer",
     "TebexAccountInfo",
     "TebexInformation",
+    "TebexClient",
 ]

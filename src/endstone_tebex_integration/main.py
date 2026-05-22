@@ -5,7 +5,7 @@ from endstone.command import CommandSender, Command
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 from pydantic import BaseModel, Field
-from .commands import TebexCommands, TebexAdminCommands
+from .commands import TebexCommands, TebexAdminCommands, TebexClient
 
 class TebexConfig(BaseModel):
     secret_key: str = ""
@@ -62,10 +62,22 @@ class TebexIntegrationPlugin(Plugin):
             self.logger.warning("It is highly recommended to enable online-mode in server.properties.")
             self.logger.warning("*" * 60)
 
-        self.tebex_subcommands = TebexCommands(self)
-        self.tebex_admin_subcommands = TebexAdminCommands(self)
+        if not self.config.secret_key:
+            self.active = False
+            self.logger.error("There is no secret key set in config. Please set it and then reload the plugin.")
+            return
+
+        self.tebex_client = TebexClient(self.config.secret_key)
+
+        self.tebex_subcommands = TebexCommands(self, self.tebex_client)
+        self.tebex_admin_subcommands = TebexAdminCommands(self, self.tebex_client)
+
+        self.active = True
 
     def on_command(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
+        if not self.active:
+            sender.send_error_message(self.config.messages.get("generic_error", "generic error"))
+            return False
         if command.name != "tebex" and command.name != "tebexadmin":
             return True
         if len(args) == 0:
@@ -107,6 +119,7 @@ class TebexIntegrationPlugin(Plugin):
             ("messages.payment_success", "Thank you!! The payment was successful", "Message shown to the player after a successful payment"),
             ("messages.no_subcommand", "No subcommand was provided. Try /tebex help.", "Shown when /tebex | /tebexadmin is used with no arguments"),
             ("messages.invalid_subcommand", "The subcommand provided isn't valid. Try /tebex help.", "Shown when /tebex | /tebexadmin is used with an invalid subcommand"),
+            ("messages.generic_error", "A technical error has occoured. Please contact a server admin or owner.", "Generic error for commands"),
 
             # The help section MUST have each of its items to be aligned with a real subcommand.
             ("help.help", "Show this help message", "/tebex help"),
