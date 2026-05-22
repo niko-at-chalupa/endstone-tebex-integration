@@ -74,6 +74,8 @@ class TebexIntegrationPlugin(Plugin):
 
         self.active = True
 
+        self.logger.info("If you want to reset the config, delete it and reload the plugin.")
+
     def on_command(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
         if not self.active:
             sender.send_error_message(self.config.messages.get("generic_error", "generic error"))
