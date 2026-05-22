@@ -25,6 +25,7 @@ class TebexCommands(Subcommands):
         messages = self.plugin.config.messages
         help_messages = self.plugin.config.help
 
+        sender.send_message(self.plugin.config.messages.get("help_header", ""))
         for subcommand in self.subcommand_map:
             if subcommand in help_messages:
                 description = help_messages.get(subcommand)
@@ -52,6 +53,7 @@ class TebexAdminCommands(Subcommands):
         messages = self.plugin.config.messages
         help_messages = self.plugin.config.help_admin
 
+        sender.send_message(self.plugin.config.messages.get("help_header", ""))
         for subcommand in self.subcommand_map:
             if subcommand in help_messages:
                 description = help_messages.get(subcommand)
