@@ -73,3 +73,12 @@ class TebexClient:
 
     async def get_payment(self, transaction_id: str) -> dict:
         return await self._get(f"/payments/{transaction_id}")
+
+    async def get_package(self, package_id: int) -> dict:
+        return await self._get(f"/package/{package_id}")
+
+    async def get_all_payments(self) -> dict:
+        return await self._get("/payments")
+
+    async def delete_offline_commands(self, command_ids: List[int]) -> None:
+        await self._delete("/queue", {"ids": command_ids})
