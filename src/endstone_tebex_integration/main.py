@@ -15,7 +15,7 @@ class TebexConfig(BaseModel):
     messages: dict[str, str] = Field(default_factory=dict)
     help: dict[str, str] = Field(default_factory=dict)
     help_admin: dict[str, str] = Field(default_factory=dict)
-    commands: dict[str, dict[str, str]]
+    commands: dict[str, dict[str, Any]]
 
 class TebexIntegrationPlugin(Plugin):
     config: TebexConfig
@@ -27,6 +27,7 @@ class TebexIntegrationPlugin(Plugin):
                 "/tebex <subcommand: string> [args: message]", 
                 "/tebex help",
                 "/tebex info",
+                "/tebex store",
             ], # please make sure this mirrors subcommands in commands.py
             "permissions": ["tebex_integration.command.general"],
         },
@@ -155,6 +156,7 @@ class TebexIntegrationPlugin(Plugin):
             ("commands.info.store", "Store: [store_name]", "Line for the store in /tebex info. [store_name] will resolve to the store's name."),
             ("commands.info.currency", "Currency: [currency]", "Line for the currency in /tebex info. [currency] will resolve to the server's currency."),
             ("commands.info.domain", "URL: [domain]", "Line for the domain in /tebex info. [domain] will resolve to the server's domain (i.e., URL)"),
+            ("commands.store.qr_codes", True, "Weather to use QR codes alongside URL upon players using /tebex store")
         ]
         
         if cfg_path.exists():

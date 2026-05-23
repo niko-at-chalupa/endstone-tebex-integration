@@ -1,8 +1,10 @@
+from endstone import Player
 from endstone.command import CommandSender, Command
 from abc import ABC
 from typing import Callable, Any, TYPE_CHECKING
 from .tebex import TebexClient
 from endstone.asyncio import submit, get_loop
+from .etc import give_player_qr_code_map
 
 if TYPE_CHECKING:
     from . import TebexIntegrationPlugin
@@ -65,6 +67,10 @@ class TebexCommands(Subcommands):
             def send_everything():
                 sender.send_message(info.account.domain)
             self.plugin.server.scheduler.run_task(self.plugin, send_everything)
+
+            if isinstance(sender, Player) and self.config.commands.get("store", {}).get("qr_codes", True):
+                await give_player_qr_code_map(self.plugin, info.account.domain, sender)
+            
         submit(_run())
         return True
 

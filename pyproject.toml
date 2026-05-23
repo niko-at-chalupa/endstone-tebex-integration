@@ -15,6 +15,9 @@ dependencies = [
     "aiohttp",
     "pydantic",
     "ruamel.yaml",
+    "numpy",
+    "qrcode",
+    "pillow",
 ]
 
 [project.entry-points."endstone"]
