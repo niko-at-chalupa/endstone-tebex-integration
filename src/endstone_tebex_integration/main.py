@@ -14,6 +14,7 @@ class TebexConfig(BaseModel):
     messages: dict[str, str] = Field(default_factory=dict)
     help: dict[str, str] = Field(default_factory=dict)
     help_admin: dict[str, str] = Field(default_factory=dict)
+    commands: dict[str, dict[str, str]]
 
 class TebexIntegrationPlugin(Plugin):
     config: TebexConfig
@@ -23,7 +24,8 @@ class TebexIntegrationPlugin(Plugin):
             "description": "General Tebex commands.",
             "usages": [
                 "/tebex <subcommand: string>", 
-                "/tebex help"
+                "/tebex help",
+                "/tebex info",
             ], # please make sure this mirrors subcommands in commands.py
             "permissions": ["tebex_integration.command.general"],
         },
@@ -126,8 +128,12 @@ class TebexIntegrationPlugin(Plugin):
 
             # The help section MUST have each of its items to be aligned with a real subcommand.
             ("help.help", "Show this help message", "/tebex help"),
+            ("help_admin.help", "Show this help message", "/tebexadmin help"),
 
-            ("help_admin.help", "Show this help message", "/tebexadmin help")
+            ("commands.info.header", "--- Info ---", "Header for the /tebex info's output"),
+            ("commands.info.store", "Store: [store_name]", "Line for the store in /tebex info. [store_name] will resolve to the store's name."),
+            ("commands.info.currency", "Currency: [currency]", "Line for the currency in /tebex info. [currency] will resolve to the server's currency."),
+            ("commands.info.domain", "URL: [domain]", "Line for the domain in /tebex info. [domain] will resolve to the server's domain (i.e., URL)"),
         ]
         
         if cfg_path.exists():
