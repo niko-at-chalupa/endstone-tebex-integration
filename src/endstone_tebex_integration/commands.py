@@ -10,11 +10,11 @@ if TYPE_CHECKING:
 # instead of just the args that on_command gives you. Thank you!
 
 class Subcommands(ABC):
-    # def a_function(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
+    # def a_function(self, sender: CommandSender, command: Command, args: list[str]) -> bool: ...
     # { "a": self.a_function }
     # ^ this is what we're asking for (the dict)
     # This should also accept unbound methods (methods that aren't object.method, but rather method(object)), but
-    # we won't be using unbount methods anyways so it doesn't matter
+    # we won't be using unbound methods anyways so it doesn't matter
     subcommand_map: dict[str, Callable[[CommandSender, Command, list[str]], bool]]
     tebex_client: TebexClient
 
