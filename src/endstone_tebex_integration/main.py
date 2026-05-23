@@ -147,6 +147,8 @@ class TebexIntegrationPlugin(Plugin):
 
             # The help section MUST have each of its items to be aligned with a real subcommand.
             ("help.help", "Show this help message", "/tebex help"),
+            ("help.info", "Show info about the server's Tebex webstore", "/tebex info"),
+            ("help.store", "Show the server's webstore URL", "/tebex store"),
             ("help_admin.help", "Show this help message", "/tebexadmin help"),
 
             ("commands.info.header", "--- Info ---", "Header for the /tebex info's output"),
