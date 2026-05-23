@@ -137,7 +137,6 @@ class TebexIntegrationPlugin(Plugin):
         
         defaults = [
             ("secret_key", "", "Your Tebex secret key"),
-            ("webhook_secret", "", "Your tebex webhook secret (leave empty if not using webhooks)"),
             ("check_interval", 60, "Interval in seconds to check for new payments"),
 
             ("messages.payment_success", "Thank you!! The payment was successful", "Message shown to the player after a successful payment"),
