@@ -58,6 +58,16 @@ class TebexCommands(Subcommands):
         submit(_run())
         return True
 
+    def store(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
+        async def _run():
+            info = await self.tebex_client.get_information()
+            
+            def send_everything():
+                sender.send_message(info.account.domain)
+            self.plugin.server.scheduler.run_task(self.plugin, send_everything)
+        submit(_run())
+        return True
+
     def __init__(self, plugin: 'TebexIntegrationPlugin', tebex_client: TebexClient):
         self.plugin = plugin
         self.tebex_client = tebex_client
