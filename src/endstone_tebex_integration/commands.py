@@ -75,6 +75,7 @@ class TebexCommands(Subcommands):
         self.subcommand_map = {
             "help": self.help,
             "info": self.info,
+            "store": self.store,
         }
 
 class TebexAdminCommands(Subcommands):
