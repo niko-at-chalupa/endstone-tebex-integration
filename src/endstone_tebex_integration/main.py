@@ -1,3 +1,4 @@
+from click.decorators import T
 from pathlib import Path
 from typing import Any, cast
 from endstone.plugin import Plugin
@@ -23,7 +24,7 @@ class TebexIntegrationPlugin(Plugin):
         "tebex": {
             "description": "General Tebex commands.",
             "usages": [
-                "/tebex <subcommand: string>", 
+                "/tebex <subcommand: string> [args: message]", 
                 "/tebex help",
                 "/tebex info",
             ], # please make sure this mirrors subcommands in commands.py
@@ -66,7 +67,7 @@ class TebexIntegrationPlugin(Plugin):
 
         if not self.config.secret_key:
             self.active = False
-            self.logger.error("There is no secret key set in config. Please set it and then reload the plugin.")
+            self.logger.error("There is no secret key set in config. Please set it and then reload the plugin, or run tebex secret <secret> in this console.")
             return
 
         self.tebex_client = TebexClient(self.config.secret_key)
@@ -79,11 +80,29 @@ class TebexIntegrationPlugin(Plugin):
         self.logger.info("If you want to reset the config, delete it and reload the plugin.")
 
     def on_command(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
+        if command.name == "tebex" and len(args) > 0 and args[0] == "secret":
+            if sender != self.server.command_sender:
+                # Here, we lie and tell non-server console senders that the subcommand is invalid.
+                # /tebex secret will only work in the server console.
+                sender.send_error_message(self.config.messages.get("invalid_subcommand", "invalid subcommand"))
+                return False
+
+            if len(args) < 2:
+                sender.send_error_message("Usage: /tebex secret <key>")
+                return False
+
+            self._save_secret_key(args[1])
+            sender.send_message("Tebex secret key has been updated and saved to config.yml.")
+            self.active = True
+            return True
+
         if not self.active:
             sender.send_error_message(self.config.messages.get("generic_error", "generic error"))
             return False
+
         if command.name != "tebex" and command.name != "tebexadmin":
             return True
+
         if len(args) == 0:
             sender.send_error_message(self.config.messages.get("no_subcommand", "no subcommand"))
             return False
@@ -172,3 +191,32 @@ class TebexIntegrationPlugin(Plugin):
     @property
     def config(self) -> TebexConfig:
         return cast(TebexConfig, self._config)
+
+    def _save_secret_key(self, key: str) -> None:
+        folder = Path(self.data_folder)
+        cfg_path = folder / "config.yml"
+        
+        yml = YAML()
+        yml.version = (1, 2)
+        
+        if cfg_path.exists():
+            with open(cfg_path, "r", encoding="utf-8") as f:
+                existing = yml.load(f)
+            if not isinstance(existing, CommentedMap):
+                existing = CommentedMap(existing or {})
+        else:
+            existing = CommentedMap()
+            
+        existing["secret_key"] = key
+        
+        with open(cfg_path, "w", encoding="utf-8") as f:
+            yml.dump(existing, f)
+            
+        self.config.secret_key = key
+        if hasattr(self, "tebex_client"):
+            self.tebex_client.secret = key
+        else:
+            self.tebex_client = TebexClient(key)
+            self.tebex_subcommands = TebexCommands(self, self.tebex_client)
+            self.tebex_admin_subcommands = TebexAdminCommands(self, self.tebex_client)
+            self.active = True
