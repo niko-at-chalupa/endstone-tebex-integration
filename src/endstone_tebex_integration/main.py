@@ -110,21 +110,25 @@ class TebexIntegrationPlugin(Plugin):
             sender.send_error_message(self.config.messages.get("no_subcommand", "no subcommand"))
             return False
 
-        if command.name == "tebex":
-            subcommand = self.tebex_subcommands.subcommand_map.get(args[0])
-            if subcommand:
-                return subcommand(sender, command, args[1:])
-            else:
-                sender.send_error_message(self.config.messages.get("invalid_subcommand", "invalid subcommand"))
-                return False
+        try:
+            if command.name == "tebex":
+                subcommand = self.tebex_subcommands.subcommand_map.get(args[0])
+                if subcommand:
+                    return subcommand(sender, command, args[1:])
+                else:
+                    sender.send_error_message(self.config.messages.get("invalid_subcommand", "invalid subcommand"))
+                    return False
 
-        if command.name == "tebexadmin":
-            subcommand = self.tebex_admin_subcommands.subcommand_map.get(args[0])
-            if subcommand:
-                return subcommand(sender, command, args[1:])
-            else:
-                sender.send_error_message(self.config.messages.get("invalid_subcommand", "invalid subcommand"))
-
+            if command.name == "tebexadmin":
+                subcommand = self.tebex_admin_subcommands.subcommand_map.get(args[0])
+                if subcommand:
+                    return subcommand(sender, command, args[1:])
+                else:
+                    sender.send_error_message(self.config.messages.get("invalid_subcommand", "invalid subcommand"))
+        except Exception as e:
+            sender.send_error_message(self.config.messages.get("generic_error", "generic error"))
+            self.logger.error(str(e))
+            return False
 
         return True
 
