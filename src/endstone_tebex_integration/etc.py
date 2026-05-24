@@ -52,12 +52,12 @@ def give_player_map_with_renderer(plugin: Plugin, player: Player, custom_rendere
         item.set_item_meta(meta)
         
     leftovers = player.inventory.add_item(item)
-    
+
     if leftovers:
-        for leftover_item in leftovers:
+        for leftover_item in leftovers.values():
             if leftover_item and isinstance(leftover_item, ItemStack) and leftover_item.amount > 0:
                 player.dimension.drop_item(player.location, leftover_item)
-                
+
 async def give_player_qr_code_map(plugin: Plugin, data: str, player: Player):
     map_view = ImageMapRenderer(await generate_qr_map_array(data=data))
     plugin.server.scheduler.run_task(plugin=plugin, task=lambda: give_player_map_with_renderer(plugin=plugin, player=player, custom_renderer=map_view))
