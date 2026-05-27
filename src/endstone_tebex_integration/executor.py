@@ -9,13 +9,22 @@ if TYPE_CHECKING:
     from .main import TebexIntegrationPlugin
 
 class TebexExecutor:
-    def __init__(self, client: TebexClient, server: Server, logger: Logger, plugin: 'TebexIntegrationPlugin') -> None:
-        self.client = client
-        self.server = server
-        self.logger = logger
+    def __init__(self, plugin: 'TebexIntegrationPlugin') -> None:
         self.plugin = plugin
 
         self.server.scheduler.run_task(self.plugin, self._routine, period=20*self.plugin.config.check_interval)
+
+    @property
+    def server(self):
+        return self.plugin.server
+
+    @property
+    def logger(self):
+        return self.plugin.logger
+    
+    @property
+    def client(self):
+        return self.plugin.tebex_client
 
     def _routine(self):
         """Runs for every time the check interval hits."""

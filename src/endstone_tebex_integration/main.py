@@ -84,7 +84,7 @@ class TebexIntegrationPlugin(Plugin):
         self.tebex_subcommands = TebexCommands(self, self.tebex_client)
         self.tebex_admin_subcommands = TebexAdminCommands(self, self.tebex_client)
 
-        self.tebex_executor = TebexExecutor(self.tebex_client, self.server, self.logger, self)
+        self.tebex_executor = TebexExecutor(self)
 
         self.active = True
 
