@@ -6,6 +6,7 @@ class TebexDuePlayer(BaseModel):
     id: int
     name: str
     uuid: Optional[str] = None
+    xuid: Optional[str] = None
 
 class TebexCommandConditions(BaseModel):
     delay: int = 0
