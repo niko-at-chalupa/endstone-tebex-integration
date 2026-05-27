@@ -135,12 +135,8 @@ class TebexAdminCommands(Subcommands):
                 self.plugin.server.scheduler.run_task(self.plugin, send_everything)
                 
             except Exception as e:
-                # Capture the error string before Python deletes 'e'
                 error_msg = str(e) 
-                
-                def log_error():
-                    self.plugin.logger.error(f"Async debug task failed for {target_name}: {error_msg}")
-                self.plugin.server.scheduler.run_task(self.plugin, log_error)
+                self.plugin.logger.error(f"Async debug task failed for {target_name}: {error_msg}")
 
         submit(_debug_async())
         sender.send_message("Worked!!")
