@@ -165,6 +165,8 @@ class TebexIntegrationPlugin(Plugin):
             ("help.info", "Show info about the server's Tebex webstore", "/tebex info"),
             ("help.store", "Show the server's webstore URL", "/tebex store"),
             ("help_admin.help", "Show this help message", "/tebexadmin help"),
+            ("help_admin.debug", "Send debug info to the console", "/tebexadmin debug"),
+            ("help_admin.fulfill", "Force the executor to fulfill all online commands", "/tebexadmin fulfill"),
 
             ("commands.info.header", "--- Info ---", "Header for the /tebex info's output"),
             ("commands.info.store", "Store: [store_name]", "Line for the store in /tebex info. [store_name] will resolve to the store's name."),
