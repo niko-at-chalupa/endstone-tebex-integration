@@ -42,6 +42,7 @@ class TebexIntegrationPlugin(Plugin):
                 "/tebexadmin <subcommand: string> [args: message]",
                 "/tebexadmin help",
                 "/tebexadmin debug",
+                "/tebexadmin fulfill",
             ], # please make sure this mirrors subcommands in commands.py
             "permissions": ["tebex_integration.command.admin"],
         }
