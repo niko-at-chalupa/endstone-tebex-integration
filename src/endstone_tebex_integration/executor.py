@@ -27,9 +27,9 @@ class TebexExecutor:
             online_player_ids.append(player.xuid)
         submit(self.run(online_player_ids))
 
-    async def run(self, online_player_ids: list[int]) -> None:
+    async def run(self, online_player_xuids: list[int]) -> None:
         due = await self.client.get_due_players()
-        online_set = set(online_player_ids)
+        online_set = set(online_player_xuids)
         executed: list[int] = []
 
         for player in due.players:
@@ -39,7 +39,7 @@ class TebexExecutor:
             try:
                 in_game_player = self.server.get_player(player.name)
             except Exception: # Don't know what this would raise
-                self.logger.error(f"Error while handling ")
+                self.logger.error(f"Error while getting player {player.name}")
                 continue
 
             queue_info = await self.client.get_online_commands(player.id)
