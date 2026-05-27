@@ -7,6 +7,7 @@ from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 from pydantic import BaseModel, Field
 from .commands import TebexCommands, TebexAdminCommands, TebexClient
+from .executor import TebexExecutor
 
 class TebexConfig(BaseModel):
     secret_key: str = ""
@@ -77,6 +78,9 @@ class TebexIntegrationPlugin(Plugin):
 
         self.tebex_subcommands = TebexCommands(self, self.tebex_client)
         self.tebex_admin_subcommands = TebexAdminCommands(self, self.tebex_client)
+
+        # Let's not do this for now
+        #self.tebex_executor = TebexExecutor(self.tebex_client, self.server, self.logger, self)
 
         self.active = True
 
