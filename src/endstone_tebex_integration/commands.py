@@ -148,7 +148,11 @@ class TebexAdminCommands(Subcommands):
                 online_player_ids = []
                 for player in self.plugin.server.online_players:
                     online_player_ids.append(player.xuid)
-                submit(self.plugin.tebex_executor.run(online_player_ids))
+                if self.plugin.tebex_executor:
+                    submit(self.plugin.tebex_executor.run(online_player_ids))
+                else:
+                    # Unreachable
+                    raise RuntimeError
             except Exception as e:
                 error_msg = str(e) 
                 self.plugin.logger.error(f"Async fulfill task failed: {error_msg}")

@@ -25,6 +25,13 @@ class TebexIntegrationPlugin(Plugin):
     api_version = "0.11"
     config: TebexConfig
 
+    tebex_subcommands: TebexCommands | None = None
+    tebex_admin_subcommands: TebexAdminCommands | None = None
+    tebex_executor: TebexExecutor | None = None
+
+    tebex_client: TebexClient | None = None
+    active: bool = False
+
     commands = {
         "tebex": {
             "description": "General Tebex commands.",
@@ -61,6 +68,10 @@ class TebexIntegrationPlugin(Plugin):
         }
     }
 
+    @property
+    def tebex_secret(self) -> str:
+        return self.config.secret_key
+
     def on_enable(self) -> None:
         self._config: TebexConfig = self._load_config()
         self.register_events(self)
@@ -78,16 +89,40 @@ class TebexIntegrationPlugin(Plugin):
             self.logger.error("There is no secret key set in config. Please set it and then reload the plugin, or run tebex secret <secret> in this console.")
             return
 
-        self.tebex_client = TebexClient(self.config.secret_key)
+        self.tebex_client = TebexClient(self.tebex_secret)
 
-        self.tebex_subcommands = TebexCommands(self, self.tebex_client)
-        self.tebex_admin_subcommands = TebexAdminCommands(self, self.tebex_client)
-
-        self.tebex_executor = TebexExecutor(self)
-
-        self.active = True
+        success = submit(self._check_info())
+        success.add_done_callback(self._check_info_callback)
 
         self.logger.info("If you want to reset the config, delete it and reload the plugin.")
+
+    async def _check_info(self) -> bool:
+        if not self.tebex_client:
+            return False
+        try:
+            await self.tebex_client.get_information()
+            return True
+        except Exception:
+            self.logger.error("Invalid key provided!!")
+            return False
+
+    def _check_info_callback(self, future):
+        try:
+            success = future.result() 
+            if success:
+                # Will be caught by the try/except if it fails, anyways.
+                self.tebex_subcommands = TebexCommands(self, self.tebex_client) # type: ignore
+                self.tebex_admin_subcommands = TebexAdminCommands(self, self.tebex_client) # type: ignore
+
+                self.tebex_executor = TebexExecutor(self)
+                self.active = True
+                self.logger.info("Tebex features are authenticated and active!")
+            else:
+                self.logger.error("Invalid secret key!!")
+                self.active = False
+        except Exception as e:
+            self.logger.error(f"Failed to check info due to an error: {e}")
+            self.active = False
 
     def on_command(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
         if command.name == "tebex" and len(args) > 0 and args[0] == "secret":
@@ -101,9 +136,12 @@ class TebexIntegrationPlugin(Plugin):
                 sender.send_error_message("Usage: /tebex secret <key>")
                 return False
 
+            self.active = False
             self._save_secret_key(args[1])
             sender.send_message("Tebex secret key has been updated and saved to config.yml.")
-            self.active = True
+
+            success = submit(self._check_info())
+            success.add_done_callback(self._check_info_callback)
             return True
 
         if not self.active:
@@ -119,7 +157,11 @@ class TebexIntegrationPlugin(Plugin):
 
         try:
             if command.name == "tebex":
-                subcommand = self.tebex_subcommands.subcommand_map.get(args[0])
+                if self.tebex_subcommands:
+                    subcommand = self.tebex_subcommands.subcommand_map.get(args[0])
+                else:
+                    # Unreachable
+                    raise RuntimeError
                 if subcommand:
                     return subcommand(sender, command, args[1:])
                 else:
@@ -127,7 +169,11 @@ class TebexIntegrationPlugin(Plugin):
                     return False
 
             if command.name == "tebexadmin":
-                subcommand = self.tebex_admin_subcommands.subcommand_map.get(args[0])
+                if self.tebex_admin_subcommands:
+                    subcommand = self.tebex_admin_subcommands.subcommand_map.get(args[0])
+                else:
+                    # Unreachable
+                    raise RuntimeError
                 if subcommand:
                     return subcommand(sender, command, args[1:])
                 else:
@@ -229,15 +275,15 @@ class TebexIntegrationPlugin(Plugin):
         with open(cfg_path, "w", encoding="utf-8") as f:
             yml.dump(existing, f)
             
-        self.config.secret_key = key
-        if hasattr(self, "tebex_client"):
+        self._config: TebexConfig = self._load_config()
+
+        if self.tebex_client:
             self.tebex_client.secret = key
         else:
             self.tebex_client = TebexClient(key)
-            self.tebex_subcommands = TebexCommands(self, self.tebex_client)
-            self.tebex_admin_subcommands = TebexAdminCommands(self, self.tebex_client)
-            self.active = True
 
     @event_handler
     def on_player_join(self, event: PlayerJoinEvent):
+        if not self.active or not self.tebex_client:
+            return
         submit(self.tebex_client.identify_player(event.player.name, event.player.xuid))
