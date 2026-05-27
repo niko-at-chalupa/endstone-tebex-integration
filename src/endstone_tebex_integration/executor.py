@@ -22,7 +22,8 @@ class TebexExecutor:
 
         online_player_ids = []
         for player in self.server.online_players:
-            # Is the xuid correct? Who knows.
+            # ~~Is the xuid correct? Who knows.~~
+            # It is correct.
             online_player_ids.append(player.xuid)
         submit(self.run(online_player_ids))
 
@@ -32,7 +33,7 @@ class TebexExecutor:
         executed: list[int] = []
 
         for player in due.players:
-            if player.id not in online_set:
+            if player.uuid not in online_set:
                 continue
             
             try:
@@ -46,7 +47,9 @@ class TebexExecutor:
                 try:
                     # Executing as the player so we can do stuff like `setblock ~ ~ ~ ...` or some bogus
                     # like that. I'm unsure of how offline commands work.
-                    self.server.dispatch_command(in_game_player, cmd.command.command)
+                    def dispatch_command():
+                        self.server.dispatch_command(in_game_player, cmd.command)
+                    self.plugin.server.scheduler.run_task(self.plugin, dispatch_command)
                     executed.append(cmd.id)
                 except Exception as e:
                     self.logger.error(f"Online command {cmd.id} failed: {e}")
