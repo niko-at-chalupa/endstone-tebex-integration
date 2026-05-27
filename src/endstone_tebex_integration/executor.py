@@ -45,10 +45,9 @@ class TebexExecutor:
             queue_info = await self.client.get_online_commands(player.id)
             for cmd in queue_info.commands:
                 try:
-                    # Executing as the player so we can do stuff like `setblock ~ ~ ~ ...` or some bogus
-                    # like that. I'm unsure of how offline commands work.
+                    self.logger.info(f"--- Executing command {dispatch_command} ---")
                     def dispatch_command():
-                        self.server.dispatch_command(in_game_player, cmd.command)
+                        self.server.dispatch_command(self.server.command_sender, cmd.command)
                     self.plugin.server.scheduler.run_task(self.plugin, dispatch_command)
                     executed.append(cmd.id)
                 except Exception as e:
