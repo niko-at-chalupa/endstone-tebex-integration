@@ -4,8 +4,8 @@ from typing import List, Optional
 class TebexDuePlayer(BaseModel):
     id: int
     name: str
+    # Misleadingly, the `uuid` value is actually the XUID.
     uuid: Optional[str] = None
-    xuid: Optional[str] = None
 
 class TebexCommandConditions(BaseModel):
     delay: int = 0
