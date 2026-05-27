@@ -5,6 +5,7 @@ from typing import Callable, Any, TYPE_CHECKING
 from .tebex import TebexClient
 from endstone.asyncio import submit, get_loop
 from .etc import give_player_qr_code_map
+import json
 
 if TYPE_CHECKING:
     from . import TebexIntegrationPlugin
@@ -100,17 +101,56 @@ class TebexAdminCommands(Subcommands):
             sender.send_message(f"{subcommand} - {description}")
 
         return True
-    
-    def refresh(self, sender: CommandSender, command: Command, args: list[str]):
-        pass
 
-    def dropall(self, sender: CommandSender, command: Command, args: list[str]):
-        pass
+    def debug(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
+        if not args:
+            sender.send_message("§cUsage: /tebexadmin debug <player_name>")
+            return False
+            
+        target_name = args[0]
+        
+        async def _debug_async():
+            try:
+                due = await self.tebex_client.get_due_players()
+                player = next((p for p in due.players if p.name == target_name), None)
+                
+                if not player:
+                    def send_not_found():
+                        sender.send_message(f"Player {target_name} is not in the due-players queue.")
+                    self.plugin.server.scheduler.run_task(self.plugin, send_not_found)
+                    return
 
+                online_info = await self.tebex_client.get_online_commands(player.id)
+                
+                debug_dump = {
+                    "player_info": player.model_dump(),
+                    "online_queue": online_info.model_dump(),
+                }
+                
+                dump_str = json.dumps(debug_dump, indent=2)
+
+                def send_everything():
+                    sender.send_message(f"Debug data for {target_name} has been dumped to the server console!")
+                    self.plugin.logger.info(f"DEBUG DUMP for {target_name}:\n{dump_str}")
+                self.plugin.server.scheduler.run_task(self.plugin, send_everything)
+                
+            except Exception as e:
+                # Capture the error string before Python deletes 'e'
+                error_msg = str(e) 
+                
+                def log_error():
+                    self.plugin.logger.error(f"Async debug task failed for {target_name}: {error_msg}")
+                self.plugin.server.scheduler.run_task(self.plugin, log_error)
+
+        submit(_debug_async())
+        sender.send_message("Worked!!")
+        return True
+        
     def __init__(self, plugin: 'TebexIntegrationPlugin', tebex_client: TebexClient):
         self.plugin = plugin
         self.tebex_client = tebex_client
 
         self.subcommand_map = {
             "help": self.help,
+            "debug": self.debug,
         }

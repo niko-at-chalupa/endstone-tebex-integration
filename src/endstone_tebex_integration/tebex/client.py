@@ -82,3 +82,12 @@ class TebexClient:
 
     async def delete_offline_commands(self, command_ids: List[int]) -> None:
         await self._delete("/queue", {"ids": command_ids})
+
+    async def identify_player(self, username: str, xuid: str) -> None:
+        session = await self._ensure_session()
+        async with session.post(
+            f"{self.BASE_URL}/api/accounts/identify", 
+            headers=self._headers(),
+            json={"username": username, "xuid": xuid}
+        ) as response:
+            response.raise_for_status()

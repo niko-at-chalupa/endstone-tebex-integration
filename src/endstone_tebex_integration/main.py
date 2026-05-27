@@ -1,3 +1,5 @@
+from endstone.asyncio import submit
+from endstone import Player
 from click.decorators import T
 from pathlib import Path
 from typing import Any, cast
@@ -8,6 +10,7 @@ from ruamel.yaml.comments import CommentedMap
 from pydantic import BaseModel, Field
 from .commands import TebexCommands, TebexAdminCommands, TebexClient
 from .executor import TebexExecutor
+from endstone.event import event_handler, PlayerJoinEvent
 
 class TebexConfig(BaseModel):
     secret_key: str = ""
@@ -36,8 +39,9 @@ class TebexIntegrationPlugin(Plugin):
         "tebexadmin": {
             "description": "Administrative commands for Tebex.",
             "usages": [
-                "/tebexadmin <subcommand: string>",
-                "/tebexadmin help"
+                "/tebexadmin <subcommand: string> [args: message]",
+                "/tebexadmin help",
+                "/tebexadmin debug",
             ], # please make sure this mirrors subcommands in commands.py
             "permissions": ["tebex_integration.command.admin"],
         }
@@ -51,7 +55,7 @@ class TebexIntegrationPlugin(Plugin):
 
         "tebex_integration.command.admin": {
             "description": "Allow users to access administrative tebex commands.",
-            "default": False, 
+            "default": "op", 
         }
     }
 
@@ -233,3 +237,7 @@ class TebexIntegrationPlugin(Plugin):
             self.tebex_subcommands = TebexCommands(self, self.tebex_client)
             self.tebex_admin_subcommands = TebexAdminCommands(self, self.tebex_client)
             self.active = True
+
+    @event_handler
+    def on_player_join(self, event: PlayerJoinEvent):
+        submit(self.tebex_client.identify_player(event.player.name, event.player.xuid))
