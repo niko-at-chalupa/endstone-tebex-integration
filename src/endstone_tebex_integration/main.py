@@ -66,16 +66,13 @@ class TebexIntegrationPlugin(Plugin):
         self.register_events(self)
         self.logger.info("Tebex Integration Plugin enabled.")
 
-        #if self.server.online_mode == False:
-            #self.logger.warning("*" * 60)
-            #self.logger.warning("online-mode is set to FALSE!!!!")
-            #self.logger.warning("Player XUIDs can't be verified!!!! Payments can be FAKED!!!!!!!")
-            #self.logger.warning("It is highly recommended to enable online-mode in server.properties.")
-            #self.logger.warning("*" * 60)
+        if self.server.online_mode == False:
+            self.logger.warning("*" * 60)
+            self.logger.warning("online-mode is set to FALSE!!!!")
+            self.logger.warning("Player XUIDs can't be verified!!!! Payments can be FAKED!!!!!!!")
+            self.logger.warning("It is highly recommended to enable online-mode in server.properties.")
+            self.logger.warning("*" * 60)
             
-            # ~~We will use usernames instead. Uncessessary!~~
-            # We might not? Looks like XUIDs work fine, and are likely better.
-
         if not self.config.secret_key:
             self.active = False
             self.logger.error("There is no secret key set in config. Please set it and then reload the plugin, or run tebex secret <secret> in this console.")
