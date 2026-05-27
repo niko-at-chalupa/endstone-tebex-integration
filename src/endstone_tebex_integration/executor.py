@@ -31,8 +31,6 @@ class TebexExecutor:
 
         online_player_ids = []
         for player in self.server.online_players:
-            # ~~Is the xuid correct? Who knows.~~
-            # It is correct.
             online_player_ids.append(player.xuid)
         submit(self.run(online_player_ids))
 
@@ -63,5 +61,4 @@ class TebexExecutor:
                     self.logger.error(f"Online command {cmd.id} failed: {e}")
 
         if executed:
-            # Scary!!
             await self.client.delete_commands(executed)
