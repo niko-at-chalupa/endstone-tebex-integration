@@ -71,7 +71,8 @@ class TebexIntegrationPlugin(Plugin):
             #self.logger.warning("It is highly recommended to enable online-mode in server.properties.")
             #self.logger.warning("*" * 60)
             
-            # We will use usernames instead. Uncessessary!
+            # ~~We will use usernames instead. Uncessessary!~~
+            # We might not? Looks like XUIDs work fine, and are likely better.
 
         if not self.config.secret_key:
             self.active = False
