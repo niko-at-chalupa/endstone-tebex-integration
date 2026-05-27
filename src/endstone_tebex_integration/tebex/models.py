@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
-
 class TebexDuePlayer(BaseModel):
     id: int
     name: str
@@ -18,12 +17,12 @@ class TebexQueuedCommand(BaseModel):
 
 class TebexQueuedOnlineCommand(BaseModel):
     id: int
-    command: TebexQueuedCommand
+    command: str
     conditions: TebexCommandConditions = Field(default_factory=TebexCommandConditions)
 
 class TebexQueuedOfflineCommand(BaseModel):
     id: int
-    command: TebexQueuedCommand
+    command: str
     player: TebexDuePlayer
     conditions: TebexCommandConditions = Field(default_factory=TebexCommandConditions)
 
