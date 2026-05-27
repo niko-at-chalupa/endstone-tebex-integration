@@ -22,6 +22,7 @@ class TebexConfig(BaseModel):
     commands: dict[str, dict[str, Any]]
 
 class TebexIntegrationPlugin(Plugin):
+    api_version = "0.11"
     config: TebexConfig
 
     commands = {
