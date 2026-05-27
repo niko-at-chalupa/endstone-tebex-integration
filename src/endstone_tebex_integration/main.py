@@ -9,7 +9,7 @@ from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 from pydantic import BaseModel, Field
 from .commands import TebexCommands, TebexAdminCommands, TebexClient
-from .executor import TebexExecutor
+from .executor import ExecutorScheduler
 from endstone.event import event_handler, PlayerJoinEvent
 
 class TebexConfig(BaseModel):
@@ -27,7 +27,7 @@ class TebexIntegrationPlugin(Plugin):
 
     tebex_subcommands: TebexCommands | None = None
     tebex_admin_subcommands: TebexAdminCommands | None = None
-    tebex_executor: TebexExecutor | None = None
+    executor_scheduler: ExecutorScheduler | None = None
 
     tebex_client: TebexClient | None = None
     active: bool = False
@@ -114,7 +114,7 @@ class TebexIntegrationPlugin(Plugin):
                 self.tebex_subcommands = TebexCommands(self, self.tebex_client) # type: ignore
                 self.tebex_admin_subcommands = TebexAdminCommands(self, self.tebex_client) # type: ignore
 
-                self.tebex_executor = TebexExecutor(self)
+                self.executor_scheduler = ExecutorScheduler(self)
                 self.active = True
                 self.logger.info("Tebex features are authenticated and active!")
             else:
@@ -202,6 +202,7 @@ class TebexIntegrationPlugin(Plugin):
             ("messages.invalid_subcommand", "The subcommand provided isn't valid. Try /tebex help.", "Shown when /tebex | /tebexadmin is used with an invalid subcommand"),
             ("messages.generic_error", "A technical error has occoured. Please contact a server admin or owner.", "Generic error for commands"),
             ("messages.help_header", "--- Tebex Help ---", "Goes atop the help area."),
+            ("messages.inventory_too_full", "Your inventory does not have enough space for your package! Please free up [slots_left] slots to recieve it.", "Shows to players when they don't have enough space in their inventory to recieve the package. [slots_left] will resolve to the number of slots needed to free up to recieve the package."),
 
             # The help section MUST have each of its items to be aligned with a real subcommand.
             ("help.help", "Show this help message", "/tebex help"),

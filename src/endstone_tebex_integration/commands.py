@@ -143,22 +143,16 @@ class TebexAdminCommands(Subcommands):
         return True
 
     def fulfill(self, sender: CommandSender, command: Command, args: list[str]) -> bool:        
-        async def _fulfill_async():
-            try:
-                online_player_ids = []
-                for player in self.plugin.server.online_players:
-                    online_player_ids.append(player.xuid)
-                if self.plugin.tebex_executor:
-                    submit(self.plugin.tebex_executor.run(online_player_ids))
-                else:
-                    # Unreachable
-                    raise RuntimeError
-            except Exception as e:
-                error_msg = str(e) 
-                self.plugin.logger.error(f"Async fulfill task failed: {error_msg}")
-
-        submit(_fulfill_async())
-        sender.send_message("Worked!!")
+        try:
+            if self.plugin.executor_scheduler:
+                self.plugin.executor_scheduler.routine
+            else:
+                # Unreachable
+                raise RuntimeError
+        except Exception as e:
+            self.plugin.logger.error(str(e))
+            return False
+        sender.send_message("Success")
         return True
         
     def __init__(self, plugin: 'TebexIntegrationPlugin', tebex_client: TebexClient):
