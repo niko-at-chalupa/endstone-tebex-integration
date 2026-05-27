@@ -155,7 +155,6 @@ class TebexIntegrationPlugin(Plugin):
             ("secret_key", "", "Your Tebex secret key"),
             ("check_interval", 60, "Interval in seconds to check for new payments"),
 
-            ("messages.payment_success", "Thank you!! The payment was successful", "Message shown to the player after a successful payment"),
             ("messages.no_subcommand", "No subcommand was provided. Try /tebex help.", "Shown when /tebex | /tebexadmin is used with no arguments"),
             ("messages.invalid_subcommand", "The subcommand provided isn't valid. Try /tebex help.", "Shown when /tebex | /tebexadmin is used with an invalid subcommand"),
             ("messages.generic_error", "A technical error has occoured. Please contact a server admin or owner.", "Generic error for commands"),
