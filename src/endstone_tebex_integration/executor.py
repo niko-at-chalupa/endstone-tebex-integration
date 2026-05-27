@@ -45,7 +45,7 @@ class TebexExecutor:
             queue_info = await self.client.get_online_commands(player.id)
             for cmd in queue_info.commands:
                 try:
-                    self.logger.info(f"--- Executing command {dispatch_command} ---")
+                    self.logger.info(f"--- Executing command {cmd.command} ---")
                     def dispatch_command():
                         self.server.dispatch_command(self.server.command_sender, cmd.command)
                     self.plugin.server.scheduler.run_task(self.plugin, dispatch_command)
