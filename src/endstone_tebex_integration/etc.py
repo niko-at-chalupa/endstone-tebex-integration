@@ -61,3 +61,12 @@ def give_player_map_with_renderer(plugin: Plugin, player: Player, custom_rendere
 async def give_player_qr_code_map(plugin: Plugin, data: str, player: Player):
     map_view = ImageMapRenderer(await generate_qr_map_array(data=data))
     plugin.server.scheduler.run_task(plugin=plugin, task=lambda: give_player_map_with_renderer(plugin=plugin, player=player, custom_renderer=map_view))
+
+def get_free_slots(player: Player) -> int:
+    inventory_contents = player.inventory.contents
+    # I'm fairly certain that `.contents` is already excluding armor and off hand, but it
+    # already works like this so why try and "fix" it?
+    main_slots = inventory_contents[:36]
+    
+    # Counts empty slots
+    return sum(1 for item in main_slots if item is None)
